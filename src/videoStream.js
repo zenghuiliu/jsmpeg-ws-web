@@ -20,7 +20,7 @@ class VideoStream extends EventEmitter {
   stream2Socket() {
     // {rtsp:{clients:[c1,c2,c3], mpeg:''}}
     this.URL_STREAM = new URLStream();
-    this.server = new WebSocket.Server({port: this.port});
+    this.server = new WebSocket.Server({ port: this.port });
     this.server.connectionCount = 0;
     this.server.on('connection', (socket, upgradeReq) => {
       const url = upgradeReq.socket.remoteAddress + upgradeReq.url;
@@ -35,7 +35,7 @@ class VideoStream extends EventEmitter {
       this.server.connectionCount++;
       let streamUrl = getURLParameters(upgradeReq.url).url;
 
-      if (!streamUrl) {return; }
+      if (!streamUrl) { return; }
 
       let dataCache = this.URL_STREAM.get(streamUrl);
       dataCache || (dataCache = new DataCache());
@@ -67,7 +67,7 @@ class VideoStream extends EventEmitter {
 
       if (data.url && this.URL_STREAM.has(data.url)) {
         const clients = this.URL_STREAM.get(data.url).clients;
-        clients.map(function(obj, index) {
+        clients.map(function (obj, index) {
           if (!obj || obj.readyState !== WebSocket.OPEN) {
             obj = null;
             clients.splice(index, 1);
@@ -82,18 +82,18 @@ class VideoStream extends EventEmitter {
 
   onSocketConnect(socket) {
     console.log(
-        '------------------------------------------------onSocketConnect');
+      '------------------------------------------------onSocketConnect');
     let streamHeader = new Buffer(8);
     streamHeader.write(STREAM_MAGIC_BYTES);
     streamHeader.writeUInt16BE(this.width, 4);
     streamHeader.writeUInt16BE(this.height, 6);
-    socket.send(streamHeader, {binary: true});
+    socket.send(streamHeader, { binary: true });
     console.log(
-        `New connection: ${this.name} - ${this.wsServer.clients.length} total`);
-    return socket.on('close', function(code, message) {
+      `New connection: ${this.name} - ${this.wsServer.clients.length} total`);
+    return socket.on('close', function (code, message) {
 
       return console.log(
-          `${this.name} disconnected - ${this.wsServer.clients.length} total`);
+        `${this.name} disconnected - ${this.wsServer.clients.length} total`);
     });
   }
 
@@ -137,14 +137,15 @@ class VideoStream extends EventEmitter {
     if (this.URL_STREAM.has(url)) {
       return this.URL_STREAM.get(url).mpeg;
     }
-    const mpeg1Muxer = new Mpeg1Muxer({url: url});
+    const mpeg1Muxer = new Mpeg1Muxer({ url: url });
     mpeg1Muxer.on('mpeg1data',
-        (data) => {
-          return this.emit('camdata', {
-            url,
-            data,
-          });
+      (data) => {
+        //console.log("ok-----------",data);
+        return this.emit('camdata', {
+          url,
+          data,
         });
+      });
 
     let gettingInputData = false;
     let gettingOutputData = false;
@@ -171,7 +172,19 @@ class VideoStream extends EventEmitter {
     //   }
     // });
     mpeg1Muxer.on('ffmpegError',
-        (data) => { return global.process.stderr.write(data); });
+      (data) => {
+        return global.process.stderr.write(data.data);
+      });
+    mpeg1Muxer.on('ffmpegClose',
+      (data) => {
+        const clients = this.URL_STREAM.get(data).clients;
+        clients.map(function (obj, index) {
+          obj.close();
+        });
+        this.URL_STREAM.get(data).clients = [];
+        console.log("closed-----------", data);
+        return global.process.stderr.write(data);
+      });
 
     return mpeg1Muxer;
   }
@@ -191,8 +204,8 @@ class VideoStream extends EventEmitter {
 function getURLParameters(url) {
   const params = url.match(/([^?=&]+)(=([^&]*))/g);
   return params ? params.reduce(
-      (a, v) => (a[v.slice(0, v.indexOf('='))] = v.slice(
-          v.indexOf('=') + 1), a), {},
+    (a, v) => (a[v.slice(0, v.indexOf('='))] = v.slice(
+      v.indexOf('=') + 1), a), {},
   ) : [];
 }
 
@@ -203,7 +216,7 @@ class DataCache {
   }
 
   getReadyClients() {
-    return this.clients.filter(function(client) {
+    return this.clients.filter(function (client) {
       return client.readyState === WebSocket.OPEN;
     });
   }
@@ -219,7 +232,7 @@ class DataCache {
   }
 
   removeCloseClients() {
-    this.clients.map(function(client, index) {
+    this.clients.map(function (client, index) {
       client = null;
       this.clients.splice(index, 1);
     });
@@ -245,7 +258,7 @@ class URLStream extends Map {
 
   removeNoUse() {
     let that = this;
-    this.forEach(function(value, key, map) {
+    this.forEach(function (value, key, map) {
       if (value.constructor === DataCache && !value.hasReadyClient()) {
         value.stopStream();
         that.delete(key);
