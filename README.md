@@ -5,6 +5,7 @@
 
 ### First
 First of all, it's a fork of [**node-rtsp-stream-es6**](https://github.com/Wifsimster/node-rtsp-stream-es6)
+First of all, it's a fork of [**jsmpeg-ws-web**](https://github.com/zhairuihao/jsmpeg-ws-web)
 ### depends
 [**jsmpeg**](https://github.com/phoboslab/jsmpeg), [FFMPEG](https://ffmpeg.org/download.html)
 
