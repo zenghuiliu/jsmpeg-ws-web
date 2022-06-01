@@ -4,7 +4,6 @@
 > 简单描述下原理， 客户端页面连接websocket将需要查看的直播地址传递过来，websocket服务端通过[FFMPEG](https://ffmpeg.org/download.html)将直播视频转码为mpegts 格式发送给客户端， 客户端通过[**jsmpeg**](https://github.com/phoboslab/jsmpeg) 解码数据 通过canvas 将直播画面绘制在页面上;
 
 ### First
-First of all, it's a fork of [**node-rtsp-stream-es6**](https://github.com/Wifsimster/node-rtsp-stream-es6)
 First of all, it's a fork of [**jsmpeg-ws-web**](https://github.com/zhairuihao/jsmpeg-ws-web)
 ### depends
 [**jsmpeg**](https://github.com/phoboslab/jsmpeg), [FFMPEG](https://ffmpeg.org/download.html)
